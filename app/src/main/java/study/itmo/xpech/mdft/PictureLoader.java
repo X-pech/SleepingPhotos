@@ -24,7 +24,7 @@ public class PictureLoader extends IntentService {
     private OnLoad callback;
 
     public PictureLoader() {
-        super("DescriptionLoader");
+        super("PictureLoader");
     }
 
     public void onCreate() {
@@ -58,8 +58,9 @@ public class PictureLoader extends IntentService {
                 URL url = new URL(srcUrl);
                 InputStream is = url.openStream();
                 OutputStream cachedFile = new BufferedOutputStream(new FileOutputStream(cachePath));
-                for (int i = is.read(); i != -1; i = is.read()) {
-                    cachedFile.write(i);
+                byte[] buffer = new byte[1024];
+                for (int i = is.read(buffer); i > 0; i = is.read(buffer)) {
+                    cachedFile.write(buffer, 0, i);
                 }
                 cachedFile.close();
                 is.close();

@@ -1,6 +1,8 @@
 package study.itmo.xpech.mdft;
 
+import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
@@ -21,6 +23,8 @@ public class ItemDetailFragment extends Fragment {
     View rootView;
     ImageView imageView;
     TextView textView;
+    Context context;
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -42,6 +46,15 @@ public class ItemDetailFragment extends Fragment {
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
+        if (context != null) {
+            context.bindService(new Intent(context, PictureLoader.class), serviceConnection, 0);
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments().containsKey(ExtraValues.EXTRA_URL.toString())) {
@@ -57,18 +70,24 @@ public class ItemDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         String cachePath = getContext().getCacheDir().getAbsolutePath().concat("/").concat(srcUrl);
         rootView = inflater.inflate(R.layout.item_detail, container, false);
-        imageView = (ImageView) rootView.findViewById(R.id.image_view);
-        textView = (TextView) rootView.findViewById(R.id.image_description);
+        imageView = rootView.findViewById(R.id.image_view);
+        textView = rootView.findViewById(R.id.image_description);
         PictureLoader.load(rootView.getContext(), srcUrl, cachePath);
         imageView.setContentDescription(description);
         textView.setText(description);
-        getContext().bindService(new Intent(getContext(), PictureLoader.class), serviceConnection, 0);
         return rootView;
     }
 
     @Override
     public void onDestroy() {
-        getContext().unbindService(serviceConnection);
         super.onDestroy();
+    }
+
+    @Override
+    public void onDetach() {
+        if (context != null) {
+            getContext().unbindService(serviceConnection);
+        }
+        super.onDetach();
     }
 }

@@ -55,7 +55,7 @@ public class DescriptionLoader extends IntentService {
             BufferedReader br = new BufferedReader(new InputStreamReader(is), 8);
             StringBuilder sb = new StringBuilder();
             for (String line = br.readLine(); line != null; line = br.readLine()) {
-                sb.append(line + '\n');
+                sb.append(line).append('\n');
             }
             String result = sb.substring(15, sb.length() - 2);
             tempJSO = new JSONObject(result);
