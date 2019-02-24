@@ -1,6 +1,10 @@
 <resources>
-    <string name="app_name">КАРТИНКИ ПРО СОН... ГРУСТНО...</string>
+    <string name="app_name">КАРТИНКИ ПРО ПОИСК... ГРУСТНО...</string>
     <string name="title_item_detail">Pic!</string>
     <string name="default_content_description">no description</string>
     <string name="query_url"><![CDATA[https://api.flickr.com/services/feeds/photos_public.gne?tags=sleep&format=json]]></string>
+    <string name="query"></string>
+    <string name="search_icon">🔍</string>
+    <string name="FavAdd">Add</string>
+    <string name="FavRemoved">Remove</string>
 </resources>

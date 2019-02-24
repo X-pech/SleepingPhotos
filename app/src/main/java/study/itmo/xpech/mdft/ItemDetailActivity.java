@@ -4,8 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+
+import study.itmo.xpech.mdft.util.ExtraValues;
 
 /**
  * An activity representing a single Item detail screen. This
@@ -19,8 +20,6 @@ public class ItemDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_detail);
-        Toolbar toolbar = findViewById(R.id.detail_toolbar);
-        setSupportActionBar(toolbar);
 
 
         ActionBar actionBar = getSupportActionBar();
@@ -30,9 +29,7 @@ public class ItemDetailActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             Bundle arguments = new Bundle();
-            arguments.putString(ExtraValues.EXTRA_URL.toString(),
-                    getIntent().getStringExtra(ExtraValues.EXTRA_URL.toString()));
-            arguments.putString(ExtraValues.EXTRA_DESC.toString(), getIntent().getStringExtra(ExtraValues.EXTRA_DESC.toString()));
+            arguments.putParcelable(ExtraValues.DATA_KEY_DETAIL.toString(), getIntent().getParcelableExtra(ExtraValues.DATA_KEY_DETAIL.toString()));
             ItemDetailFragment fragment = new ItemDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
