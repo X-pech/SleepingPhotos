@@ -10,28 +10,25 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 
-import study.itmo.xpech.mdft.pic.PicturesContent;
+import study.itmo.xpech.mdft.model.Pic;
+import study.itmo.xpech.mdft.util.ExtraValues;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
 
     private final ItemListActivity mParentActivity;
-    private final ArrayList<PicturesContent.Pic> mValues = new ArrayList<>();
+    private final ArrayList<Pic> mValues = new ArrayList<>();
     private final boolean mTwoPane;
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            PicturesContent.Pic item = (PicturesContent.Pic) view.getTag();
+            Pic item = (Pic) view.getTag();
             if (mTwoPane) {
                 Bundle arguments = new Bundle();
-                arguments.putString(ExtraValues.EXTRA_URL.toString(), item.srcUrl);
-                arguments.putString(ExtraValues.EXTRA_DESC.toString(), item.description);
+                arguments.putParcelable(ExtraValues.DATA_KEY_DETAIL.toString(), item);
                 ItemDetailFragment fragment = new ItemDetailFragment();
                 fragment.setArguments(arguments);
                 mParentActivity.getSupportFragmentManager().beginTransaction()
@@ -40,8 +37,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             } else {
                 Context context = view.getContext();
                 Intent intent = new Intent(context, ItemDetailActivity.class);
-                intent.putExtra(ExtraValues.EXTRA_URL.toString(), item.srcUrl);
-                intent.putExtra(ExtraValues.EXTRA_DESC.toString(), item.description);
+                intent.putExtra(ExtraValues.DATA_KEY_DETAIL.toString(), item);
 
                 context.startActivity(intent);
             }
@@ -53,29 +49,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         mTwoPane = twoPane;
     }
 
-    private static String getFullPls(String pureUrl) {
-        String res = pureUrl.substring(0, pureUrl.length() - 5);
-        return res + "c.jpg";
-    }
-
-    public void setElement(JSONObject data) {
-        if (data == null)
-            return;
-        try {
-            JSONArray pics = data.getJSONArray("items");
-            JSONObject pic;
-            String description, srcUrl;
-            for (int i = 0; i < pics.length(); i++) {
-                pic = pics.getJSONObject(i);
-                description = pic.getString("title");
-                srcUrl = getFullPls(pic.getJSONObject("media").getString("m"));
-                mValues.add(PicturesContent.createPicItem(i + 1, description, srcUrl));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+    public void setElement(Pic[] pics) {
+        mValues.addAll(Arrays.asList(pics));
         notifyDataSetChanged();
     }
+
 
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -104,8 +82,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
         ViewHolder(View view) {
             super(view);
-            mIdView = (TextView) view.findViewById(R.id.id_text);
-            mContentView = (TextView) view.findViewById(R.id.content);
+            mIdView = view.findViewById(R.id.id_text);
+            mContentView = view.findViewById(R.id.content);
         }
     }
 }

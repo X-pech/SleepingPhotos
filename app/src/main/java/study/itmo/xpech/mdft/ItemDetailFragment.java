@@ -1,74 +1,122 @@
 package study.itmo.xpech.mdft;
 
-import android.content.ComponentName;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.graphics.Bitmap;
+import android.content.Context;
 import android.os.Bundle;
-import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.Consumer;
+import study.itmo.xpech.mdft.model.App;
+import study.itmo.xpech.mdft.model.DBHelper;
+import study.itmo.xpech.mdft.model.Pic;
+import study.itmo.xpech.mdft.util.ExtraValues;
+
 public class ItemDetailFragment extends Fragment {
 
-    private String srcUrl;
-    private String description;
-    private PictureLoader.MBinder binder;
+    Pic pic;
     View rootView;
     ImageView imageView;
     TextView textView;
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            ItemDetailFragment.this.binder = (PictureLoader.MBinder) service;
-            binder.setCallback(p -> setImageBitmap(p));
-        }
+    Context context;
+    Boolean favourite;
+    DBHelper helper = null;
+    Button favButtonDetail;
+    CompositeDisposable compositeDisposable;
+    String add, rem;
 
-        public void setImageBitmap(Bitmap pic) {
-            imageView.setImageBitmap(pic);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-
-        }
-    };
 
     public ItemDetailFragment() {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments().containsKey(ExtraValues.EXTRA_URL.toString())) {
-            srcUrl = getArguments().getString(ExtraValues.EXTRA_URL.toString());
-        }
-        if (getArguments().containsKey(ExtraValues.EXTRA_DESC.toString())) {
-            description = getArguments().getString(ExtraValues.EXTRA_DESC.toString());
-        }
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        compositeDisposable = new CompositeDisposable();
+        if (getArguments().containsKey(ExtraValues.DATA_KEY_DETAIL.toString())) {
+            pic = getArguments().getParcelable(ExtraValues.DATA_KEY_DETAIL.toString());
+        }
+        add = getString(R.string.FavAdd);
+        rem = getString(R.string.FavRemoved);
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        String cachePath = getContext().getCacheDir().getAbsolutePath().concat("/").concat(srcUrl);
+
         rootView = inflater.inflate(R.layout.item_detail, container, false);
-        imageView = (ImageView) rootView.findViewById(R.id.image_view);
-        textView = (TextView) rootView.findViewById(R.id.image_description);
-        PictureLoader.load(rootView.getContext(), srcUrl, cachePath);
-        imageView.setContentDescription(description);
-        textView.setText(description);
-        getContext().bindService(new Intent(getContext(), PictureLoader.class), serviceConnection, 0);
+
+        helper = App.getDB();
+        favButtonDetail = rootView.findViewById(R.id.fav_button_detail);
+        favButtonDetail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (favourite) {
+                    Log.d("MEME", "REMOVED");
+                    favButtonDetail.setText(add);
+                    compositeDisposable.add(helper.delete(pic.description, pic.srcUrl).subscribe(new Consumer<Boolean>() {
+                        @Override
+                        public void accept(Boolean aBoolean) throws Exception {
+                            // Nothing)
+                        }
+                    }));
+                    favourite = false;
+                } else {
+                    Log.d("MEME", "added");
+                    favButtonDetail.setText(rem);
+                    compositeDisposable.add(helper.add(pic.description, pic.srcUrl).subscribe(new Consumer<Boolean>() {
+                        @Override
+                        public void accept(Boolean aBoolean) throws Exception {
+                            //Nothing)
+                        }
+                    }));
+                    favourite = true;
+                }
+            }
+        });
+
+        compositeDisposable.add(helper.check(pic.description, pic.srcUrl).subscribe(new Consumer<Boolean>() {
+            @Override
+            public void accept(Boolean aBoolean) throws Exception {
+                favourite = aBoolean;
+                if (!favourite) {
+                    favButtonDetail.setText(add);
+                } else {
+                    favButtonDetail.setText(rem);
+                }
+            }
+        }));
+        imageView = rootView.findViewById(R.id.image_view);
+        textView = rootView.findViewById(R.id.image_description);
+        Picasso.get().load(pic.srcUrl).into(imageView);
+        imageView.setContentDescription(pic.description);
+        textView.setText(pic.description);
         return rootView;
     }
 
     @Override
     public void onDestroy() {
-        getContext().unbindService(serviceConnection);
         super.onDestroy();
     }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+    }
+
 }

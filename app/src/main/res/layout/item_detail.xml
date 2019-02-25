@@ -10,6 +10,12 @@
     android:textIsSelectable="true"
     tools:context=".ItemDetailFragment">
 
+    <Button
+        android:id="@+id/fav_button_detail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="FAV" />
+
     <ImageView
         android:id="@+id/image_view"
         android:layout_width="match_parent"
