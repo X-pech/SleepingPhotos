@@ -40,7 +40,7 @@ public class ItemListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_item_list);
 
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
@@ -51,7 +51,7 @@ public class ItemListActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.item_list);
         assert recyclerView != null;
-        setupRecyclerView((RecyclerView) recyclerView);
+        setupRecyclerView(recyclerView);
         DescriptionLoader.load(this, getString(R.string.query_url));
         bindService(new Intent(this, DescriptionLoader.class), serviceConnection, 0);
     }
